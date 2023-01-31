@@ -1,0 +1,186 @@
+﻿@model MoviesSites.Models.ViewModel.ActorMovieViewModel
+@using MoviesSites.Models.ViewModel
+
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+<h4>MovieViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-asp-controller="Movies" asp-action="Create" enctype="multipart/form-data" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="movie.Title" class="control-label"></label>
+                <input asp-for="movie.Title" class="form-control" />
+                <span asp-validation-for="movie.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="movie.ReleaseDate" class="control-label"></label>
+                <input asp-for="movie.ReleaseDate" class="form-control" />
+                <span asp-validation-for="movie.ReleaseDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="movie.Type" class="control-label"></label>
+                @*<select asp-for="Type" class="form-control"></select>*@
+                <select asp-for="movie.Type" class="form-control" asp-items="ViewBag.Types"></select>
+                <span asp-validation-for="movie.Type" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="movie.Image" class="control-label"></label>
+                <input asp-for="movie.Image" class="form-control">
+                <span asp-validation-for="movie.Image" class="text-danger"></span>
+            </div>
+            
+            @*<div class="form-group" id="actor-inputs">*@
+            
+            <div class="form-group" id="actor-inputs">
+                
+                <label asp-for="actors1.Name">Actor Name:</label>
+                    <input asp-for="actors1.Name" type="text" id="actor-name" class="form-control" />
+
+                <label asp-for="actors1.Image" class="control-label"></label>
+                    <input asp-for="actors1.Image" class="form-control">
+                    <span asp-validation-for="actors1.Image" class="text-danger"></span>
+
+                @*<button class="btn btn-primary" id="add-actor-button" >Add Actor</button>*@
+                @*<button class="btn btn-danger" onclick="removeActor(this)">Remove Actor</button>*@
+            </div>
+            <div class="form-group" id="actor-inputs">    
+                <label asp-for="actors2.Name">Actor Name:</label>
+                    <input asp-for="actors2.Name" type="text" id="actor-name" class="form-control" />
+
+                <label asp-for="actors2.Image" class="control-label"></label>
+                    <input asp-for="actors2.Image" class="form-control">
+                    <span asp-validation-for="actors2.Image" class="text-danger"></span>
+            </div>
+            <div class="form-group" id="actor-inputs">
+                <label asp-for="actors3.Name">Actor Name:</label>
+                <input asp-for="actors3.Name" type="text" id="actor-name" class="form-control" />
+
+                <label asp-for="actors3.Image" class="control-label"></label>
+                <input asp-for="actors3.Image" class="form-control">
+                <span asp-validation-for="actors3.Image" class="text-danger"></span>
+            </div>
+            
+            @*<button class="btn btn-primary" id="add-actor-button">Add Actor</button>*@
+            @*<div class="form-group">
+                <label asp-for="Actors.Image" class="control-label"></label>
+                <input asp-for="Actors.Image" class="form-control">
+                <span asp-validation-for="Actors.Image" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+    <script>
+        $(document).on("focus", "#actor-inputs input[type=text]", function () {
+            //$(this).autocomplete({
+            //    //source: "/Movies/Search",
+            //    source: "/Movies/Search?searchString=" + $(this).val(),
+            //    select: function (event, ui) {
+            //        var actorId = ui.item.id;
+            //        var inputField = $(this);
+            //        $.ajax({
+            //            url: "/Actor/GetImage",
+            //            data: { id: actorId },
+            //            dataType: "json",
+            //            success: function (data) {
+            //            inputField.siblings("img").attr("src", data.imageUrl).show();
+            //            inputField.siblings("input[name='Actors[].Image']").val(data.imageUrl);
+            //            }
+            //        });
+            //    }
+            //});
+            $(this).autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "/Movies/Search",
+                        data: { searchString: request.term },
+                        dataType: "json",
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return {
+                                    label: item.Name,
+                                    value: item.Name,
+                                };
+                            }));
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    var actorId = ui.item.id;
+                    var inputField = $(this);
+                    $.ajax({
+                        url: "/Actor/GetImage",
+                        data: { id: actorId },
+                        dataType: "json",
+                        success: function (data) {
+                            inputField.siblings("img").attr("src", data.imageUrl).show();
+                            inputField.siblings("input[name='Actors[].Image']").val(data.imageUrl);
+                        }
+                    });
+                }
+            });
+        });
+
+        $("#add-actor-button").click(function (event) {
+            event.preventDefault();
+            //var inputGroup = $("<div>", { class: "form-group" });
+            var inputGroup = $("#actor-inputs").clone();
+            inputGroup.find("input[type=text]").val("");
+            inputGroup.insertAfter("#actor-inputs");
+            //inputGroup.append(
+            //    $("<input>", {
+            //        type: "text",
+            //        id: "actor-name",
+            //        name: "Actors[].Name",
+            //        class: "form-control",
+            //        placeholder: "Actor name"
+            //    })
+            //);
+            //inputGroup.append(
+            //    $("<input>", {
+            //        type: "file",
+            //        id: "actor-image",
+            //        name: "Actors[].Image",
+            //        class: "form-control"
+            //    })
+            //);
+            //inputGroup.append(
+            //    $("<img>", { id: "actor-image", style: "display:none" })
+            //);
+            inputGroup.append(
+                $("<button>", {
+                    class: "btn btn-danger",
+                    onclick: "removeActor(this)",
+                    text: "Remove Actor"
+                })
+            );
+            //$("#actor-inputs").append(inputGroup);
+        });
+
+        function removeActor(btn) {
+            $(btn).closest(".form-group").remove();
+        }
+
+
+
+        //function removeActor(btn) {
+        //    $(btn).closest(".form-group").remove();
+        //}
+
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
