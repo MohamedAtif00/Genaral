@@ -40,7 +40,7 @@
             <div class="form-group" id="actor-inputs">
                 
                 <label asp-for="actors1.Name">Actor Name:</label>
-                    <input asp-for="actors1.Name" type="text" id="actor-name" class="form-control" />
+                <input asp-for="actors1.Name" name="searchString" type="text" id="actor-name" class="form-control" />
 
                 <label asp-for="actors1.Image" class="control-label"></label>
                     <input asp-for="actors1.Image" class="form-control">
@@ -51,7 +51,7 @@
             </div>
             <div class="form-group" id="actor-inputs">    
                 <label asp-for="actors2.Name">Actor Name:</label>
-                    <input asp-for="actors2.Name" type="text" id="actor-name" class="form-control" />
+                <input asp-for="actors2.Name" name="searchString" type="text" id="actor-name" class="form-control" />
 
                 <label asp-for="actors2.Image" class="control-label"></label>
                     <input asp-for="actors2.Image" class="form-control">
@@ -59,14 +59,24 @@
             </div>
             <div class="form-group" id="actor-inputs">
                 <label asp-for="actors3.Name">Actor Name:</label>
-                <input asp-for="actors3.Name" type="text" id="actor-name" class="form-control" />
+                <input asp-for="actors3.Name" name="searchString" type="text" id="actor-name" class="form-control" />
 
                 <label asp-for="actors3.Image" class="control-label"></label>
                 <input asp-for="actors3.Image" class="form-control">
                 <span asp-validation-for="actors3.Image" class="text-danger"></span>
             </div>
-            
-            @*<button class="btn btn-primary" id="add-actor-button">Add Actor</button>*@
+            @*@for(int x =0;x < Model.actors.Length;x++)
+            {
+            <div class="form-group" id="actor-inputs">
+                <label asp-for="actors[x].Name">Actor Name:</label>
+                <input asp-for="actors[x].Name" name="searchString" type="text" id="actor-name" class="form-control" />
+
+                <label asp-for="actors[x].Image" class="control-label"></label>
+                <input asp-for="actors[x].Image" class="form-control">
+                <span asp-validation-for="actors[x].Image" class="text-danger"></span>
+            </div>
+            }*@
+            <button class="btn btn-primary" id="add-actor-button">Add Actor</button>
             @*<div class="form-group">
                 <label asp-for="Actors.Image" class="control-label"></label>
                 <input asp-for="Actors.Image" class="form-control">
@@ -75,6 +85,7 @@
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
+            @*<img src="~/images/actors/movie15.jpg" />*@
         </form>
     </div>
 </div>
@@ -84,81 +95,52 @@
 @section Scripts {
     <script>
         $(document).on("focus", "#actor-inputs input[type=text]", function () {
-            //$(this).autocomplete({
-            //    //source: "/Movies/Search",
-            //    source: "/Movies/Search?searchString=" + $(this).val(),
-            //    select: function (event, ui) {
-            //        var actorId = ui.item.id;
-            //        var inputField = $(this);
-            //        $.ajax({
-            //            url: "/Actor/GetImage",
-            //            data: { id: actorId },
-            //            dataType: "json",
-            //            success: function (data) {
-            //            inputField.siblings("img").attr("src", data.imageUrl).show();
-            //            inputField.siblings("input[name='Actors[].Image']").val(data.imageUrl);
-            //            }
-            //        });
-            //    }
-            //});
             $(this).autocomplete({
                 source: function (request, response) {
+                    var inputField = $(this);
                     $.ajax({
                         url: "/Movies/Search",
                         data: { searchString: request.term },
+                        type: "GET",
                         dataType: "json",
                         success: function (data) {
                             response($.map(data, function (item) {
+                                
                                 return {
-                                    label: item.Name,
-                                    value: item.Name,
+                                    label: item.name,
+                                    value: item.name
                                 };
                             }));
+                            
                         }
                     });
                 },
                 select: function (event, ui) {
-                    var actorId = ui.item.id;
-                    var inputField = $(this);
-                    $.ajax({
-                        url: "/Actor/GetImage",
-                        data: { id: actorId },
-                        dataType: "json",
-                        success: function (data) {
-                            inputField.siblings("img").attr("src", data.imageUrl).show();
-                            inputField.siblings("input[name='Actors[].Image']").val(data.imageUrl);
-                        }
-                    });
+                    var imageUrl = ui.item.imagePath;
+                    $(this).siblings("img").attr("src", imageUrl).show();
                 }
+
+                //select: function (event, ui) {
+                //    var actorId = ui.item.id;
+                //    var inputField = $(this);
+                //    $.ajax({
+                //        url: "/Actor/GetImage",
+                //        data: { id: actorId },
+                //        dataType: "json",
+                //        success: function (data) {
+                //            inputField.siblings("img").attr("src", data.imageUrl).show();
+                //            inputField.siblings("input[name='Actors[].Image']").val(data/*.imageUrl*/);
+                //        }
+                //    });
+                //}
             });
         });
 
         $("#add-actor-button").click(function (event) {
             event.preventDefault();
-            //var inputGroup = $("<div>", { class: "form-group" });
             var inputGroup = $("#actor-inputs").clone();
             inputGroup.find("input[type=text]").val("");
             inputGroup.insertAfter("#actor-inputs");
-            //inputGroup.append(
-            //    $("<input>", {
-            //        type: "text",
-            //        id: "actor-name",
-            //        name: "Actors[].Name",
-            //        class: "form-control",
-            //        placeholder: "Actor name"
-            //    })
-            //);
-            //inputGroup.append(
-            //    $("<input>", {
-            //        type: "file",
-            //        id: "actor-image",
-            //        name: "Actors[].Image",
-            //        class: "form-control"
-            //    })
-            //);
-            //inputGroup.append(
-            //    $("<img>", { id: "actor-image", style: "display:none" })
-            //);
             inputGroup.append(
                 $("<button>", {
                     class: "btn btn-danger",
@@ -166,12 +148,12 @@
                     text: "Remove Actor"
                 })
             );
-            //$("#actor-inputs").append(inputGroup);
         });
 
         function removeActor(btn) {
             $(btn).closest(".form-group").remove();
         }
+
 
 
 

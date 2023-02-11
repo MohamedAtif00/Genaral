@@ -12,12 +12,13 @@ using MoviesSites.Models.ViewModel;
 
 namespace MoviesSites.Controllers
 {
+
     public class MoviesController : Controller
     {
         private readonly MoviesDbContext _context;
         private readonly IWebHostEnvironment _environment;
 
-        public MoviesController(MoviesDbContext context,IWebHostEnvironment environment)
+        public MoviesController(MoviesDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
             _environment = environment;
@@ -26,7 +27,7 @@ namespace MoviesSites.Controllers
         // GET: Movies
         public async Task<IActionResult> Index()
         {
-              return View(await _context.movies.ToListAsync());
+            return View(await _context.movies.ToListAsync());
         }
 
         // GET: Movies/Details/5
@@ -83,7 +84,7 @@ namespace MoviesSites.Controllers
 
                 // Loop through the actors in the movieModel
                 //foreach (var actor in amvm)
-                List<ActorViewModel> avm = new List<ActorViewModel> { model.actors1,model.actors2,model.actors3 };
+                List<ActorViewModel> avm = new List<ActorViewModel> { model.actors1, model.actors2, model.actors3 };
                 foreach (var actor in avm) {
                     if (_context.actors.Any(a => a.Name == actor.Name))
                     {
@@ -109,7 +110,7 @@ namespace MoviesSites.Controllers
                     var juncClass = new ActorMovie { Actor = newActor, Movie = movie, ActorId = newActor.Id, MovieId = movie.Id };
                     _context.Add(juncClass);
                     //movie.ActorsMovies.Add(juncClass);
-                    
+
                 }
 
 
@@ -262,23 +263,36 @@ namespace MoviesSites.Controllers
             {
                 _context.movies.Remove(movie);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
+        //[Produces("json")]
         [HttpGet]
         public async Task<IActionResult> Search(string searchString)
         {
-            if (!string.IsNullOrEmpty(searchString))
+            try
             {
-                var actors = await _context.actors.Where(a => a.Name.Contains(searchString))
-                                                    .Select(a => a.Name /*new { id = a.Id, label = a.Name }*/)
-                                                    .ToListAsync();
-                return Json(actors);
+                string searchString2 = HttpContext.Request.Query["searchString"].ToString();
+                var result = _context.actors.Where(a => a.Name.Contains(searchString2))
+                                            .Select(p => p).ToList();
+                return Ok(result);
             }
-            return Json(new List<object>());
+            catch (Exception ex) {
+                return BadRequest();
+            }
         }
+        //public async Task<IActionResult> Search(string searchString)
+        //{
+        //    if (!string.IsNullOrEmpty(searchString))
+        //    {
+        //        var actors = await _context.actors.Where(a => a.Name.Contains(searchString))
+        //                                            .Select(a => a.Name /*new { id = a.Id, label = a.Name }*/)
+        //                                            .ToListAsync();
+        //        return Json(actors);
+        //    }
+        //    return Json(new List<object>());
+        //}
 
         //public async Task<IActionResult> Search(string searchString)
         //{
@@ -294,11 +308,12 @@ namespace MoviesSites.Controllers
         public IActionResult GetImage(int id)
         {
             var actor = _context.actors.Find(id);
-            if (actor != null && actor.Image != null)
+            if (actor != null && actor.ImagePath != null)
             {
                 var imagePath = Path.Combine(_environment.WebRootPath, "images", actor.ImagePath);
-                var stream = new FileStream(imagePath, FileMode.Open);
-                return new FileStreamResult(stream, "image/jpeg");
+                //var stream = new FileStream(imagePath, FileMode.Open);
+                //return new FileStreamResult(stream, "image/jpeg");
+                return Json(imagePath);
             }
             else
             {
